@@ -58,6 +58,8 @@ func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `<div class="alert alert-success mt-4">Shortened URL: <a href="%s">%s</a></div>`, shortenedURL, shortenedURL)
 }
 
+var base62Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 func generateShortCode() string {
 	length := 6
 	shortCode := make([]byte, length)
@@ -135,4 +137,10 @@ func (app *application) urlStats(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverError(w, r, err)
 	}
+}
+
+func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	// data.Form = userSignupForm{}
+	app.render(w, r, http.StatusOK, "signup.html", data)
 }

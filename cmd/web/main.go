@@ -7,15 +7,17 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"text/template"
 
 	"github.com/manuelam2003/shortify/internal/models"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type application struct {
-	logger *slog.Logger
-	urls   *models.URLModel
-	stats  *models.StatsModel
+	logger        *slog.Logger
+	urls          *models.URLModel
+	stats         *models.StatsModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -32,10 +34,17 @@ func main() {
 
 	defer db.Close()
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	app := &application{
-		logger: logger,
-		urls:   &models.URLModel{DB: db},
-		stats:  &models.StatsModel{DB: db},
+		logger:        logger,
+		urls:          &models.URLModel{DB: db},
+		stats:         &models.StatsModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	logger.Info("starting server", "addr", *addr)
