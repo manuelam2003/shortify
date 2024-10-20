@@ -1,0 +1,39 @@
+{{define "title"}}Stats{{end}}
+
+
+{{define "main"}}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Analytics for Short URL: {{.URL.ShortCode}}</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Original URL:</h5>
+                    <p class="card-text">
+                        <a href="{{.URL.LongURL}}" target="_blank">{{.URL.LongURL}}</a>
+                    </p>
+
+                    <h5 class="card-title">Visit Count:</h5>
+                    <p class="card-text">
+                        {{.VisitCount}} times visited
+                    </p>
+
+                    <h5 class="card-title">Created At:</h5>
+                    <p class="card-text">
+                        {{.URL.CreatedAt.Format "2006-01-02 15:04:05"}}
+                    </p>
+
+                    <h5 class="card-title">Expires At:</h5>
+                    <p class="card-text">
+                        {{.URL.ExpiresAt.Format "2006-01-02 15:04:05"}}
+                    </p>
+
+                    <a href="/" class="btn btn-secondary mt-3">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

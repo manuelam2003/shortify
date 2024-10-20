@@ -1,0 +1,19 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+<div class="container mt-5">
+    <h1 class="text-center">Welcome to Shortify</h1>
+
+    <!-- Form for shortening URLs -->
+    <form hx-post="/shorten" hx-target="#responseMessage" hx-swap="outerHTML" class="mt-4">
+        <div class="form-group">
+            <label for="long_url">Enter a URL to shorten:</label>
+            <input type="url" class="form-control" id="long_url" name="long_url" placeholder="https://example.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Shortify!</button>
+    </form>
+
+    <div id="responseMessage" class="mt-4"></div>
+</div>
+
+{{end}}
