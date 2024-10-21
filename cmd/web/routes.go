@@ -1,19 +1,25 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
 
-func (app *application) routes() *http.ServeMux {
+	"github.com/justinas/alice"
+)
+
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("POST /shorten", app.shortenLink)
-	mux.HandleFunc("GET /{shortCode}", app.shortenView)
-	mux.HandleFunc("GET /{shortCode}/stats", app.urlStats)
+	mux.HandleFunc("GET /links/{shortCode}", app.shortenView)
+	mux.HandleFunc("GET /links/{shortCode}/stats", app.urlStats)
 
 	mux.HandleFunc("GET /user/signup", app.userSignup)
 	// mux.Handle("POST /user/signup", app.userSignupPost)
 	// mux.Handle("GET /user/login", app.userLogin)
 	// mux.Handle("POST /user/login", app.userLoginPost)
 
-	return mux
+	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+
+	return standard.Then(mux)
 }
