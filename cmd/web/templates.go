@@ -12,6 +12,7 @@ type templateData struct {
 	URL         models.URL
 	VisitCount  int
 	Form        any
+	Flash       string
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

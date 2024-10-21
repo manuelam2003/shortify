@@ -19,7 +19,7 @@ func (app *application) routes() http.Handler {
 	// mux.Handle("GET /user/login", app.userLogin)
 	// mux.Handle("POST /user/login", app.userLoginPost)
 
-	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
+	standard := alice.New(app.recoverPanic, app.logRequest, app.commonHeaders, app.sessionManager.LoadAndSave)
 
 	return standard.Then(mux)
 }

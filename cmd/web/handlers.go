@@ -15,6 +15,7 @@ import (
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = linkShortenForm{}
+
 	app.render(w, r, http.StatusOK, "home.html", data)
 }
 
@@ -60,6 +61,8 @@ func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
+	app.sessionManager.Put(r.Context(), "flash", "URL successfully shortened!")
+
 	fmt.Fprintf(w, `<div class="alert alert-success mt-4">Shortened URL: <a href="%s">%s</a></div>`, shortenedURL, shortenedURL)
 }
 

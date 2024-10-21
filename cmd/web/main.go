@@ -8,16 +8,19 @@ import (
 	"net/http"
 	"os"
 	"text/template"
+	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/manuelam2003/shortify/internal/models"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type application struct {
-	logger        *slog.Logger
-	urls          *models.URLModel
-	stats         *models.StatsModel
-	templateCache map[string]*template.Template
+	logger         *slog.Logger
+	urls           *models.URLModel
+	stats          *models.StatsModel
+	templateCache  map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -40,11 +43,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &application{
-		logger:        logger,
-		urls:          &models.URLModel{DB: db},
-		stats:         &models.StatsModel{DB: db},
-		templateCache: templateCache,
+		logger:         logger,
+		urls:           &models.URLModel{DB: db},
+		stats:          &models.StatsModel{DB: db},
+		templateCache:  templateCache,
+		sessionManager: sessionManager,
 	}
 
 	logger.Info("starting server", "addr", *addr)
