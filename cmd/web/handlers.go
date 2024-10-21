@@ -34,10 +34,6 @@ func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 		OriginalURL: r.FormValue("long_url"),
 	}
 
-	if !strings.HasPrefix(form.OriginalURL, "http://") && !strings.HasPrefix(form.OriginalURL, "https://") {
-		form.FieldErrors["url"] = "URL must start with http:// or https://"
-	}
-
 	form.CheckField(
 		strings.HasPrefix(form.OriginalURL, "http://") || strings.HasPrefix(form.OriginalURL, "https://"),
 		"url",
@@ -46,7 +42,7 @@ func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 
 	form.CheckField(validator.NotBlank(form.OriginalURL), "url", "This field cannot be blank")
 
-	if len(form.FieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "home.html", data)
