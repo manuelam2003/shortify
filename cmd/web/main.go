@@ -45,6 +45,7 @@ func main() {
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 12 * time.Hour
+	sessionManager.Cookie.Secure = true
 
 	app := &application{
 		logger:         logger,
@@ -54,9 +55,18 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
-	logger.Info("starting server", "addr", *addr)
+	srv := &http.Server{
+		Addr:         *addr,
+		Handler:      app.routes(),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
-	err = http.ListenAndServe(*addr, app.routes())
+	logger.Info("starting server", "addr", srv.Addr)
+
+	err = srv.ListenAndServe()
 	logger.Error(err.Error())
 	os.Exit(1)
 }
