@@ -9,22 +9,47 @@ import (
 	"text/template"
 
 	"github.com/manuelam2003/shortify/internal/models"
+	"github.com/manuelam2003/shortify/internal/validator"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Form = linkShortenForm{}
 	app.render(w, r, http.StatusOK, "home.html", data)
+}
+
+type linkShortenForm struct {
+	OriginalURL string
+	FieldErrors map[string]string
+	validator.Validator
 }
 
 func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-	originalURL := r.FormValue("long_url")
 
-	if !strings.HasPrefix(originalURL, "http://") && !strings.HasPrefix(originalURL, "https://") {
-		http.Error(w, "URL must start with http:// or https://", http.StatusBadRequest)
+	form := linkShortenForm{
+		OriginalURL: r.FormValue("long_url"),
+	}
+
+	if !strings.HasPrefix(form.OriginalURL, "http://") && !strings.HasPrefix(form.OriginalURL, "https://") {
+		form.FieldErrors["url"] = "URL must start with http:// or https://"
+	}
+
+	form.CheckField(
+		strings.HasPrefix(form.OriginalURL, "http://") || strings.HasPrefix(form.OriginalURL, "https://"),
+		"url",
+		"URL must start with http:// or https://",
+	)
+
+	form.CheckField(validator.NotBlank(form.OriginalURL), "url", "This field cannot be blank")
+
+	if len(form.FieldErrors) > 0 {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, r, http.StatusUnprocessableEntity, "home.html", data)
 		return
 	}
 
@@ -34,7 +59,7 @@ func (app *application) shortenLink(w http.ResponseWriter, r *http.Request) {
 	// TODO: add to request body
 	expires := 7
 
-	_, err := app.urls.Insert(shortCode, originalURL, expires)
+	_, err := app.urls.Insert(shortCode, form.OriginalURL, expires)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

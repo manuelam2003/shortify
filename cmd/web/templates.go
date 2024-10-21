@@ -11,6 +11,7 @@ type templateData struct {
 	CurrentYear int
 	URL         models.URL
 	VisitCount  int
+	Form        any
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
