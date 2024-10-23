@@ -8,11 +8,12 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	URL         models.URL
-	VisitCount  int
-	Form        any
-	Flash       string
+	CurrentYear     int
+	URL             models.URL
+	VisitCount      int
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

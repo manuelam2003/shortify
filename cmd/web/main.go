@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 	"github.com/manuelam2003/shortify/internal/models"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,8 +20,10 @@ type application struct {
 	logger         *slog.Logger
 	urls           *models.URLModel
 	stats          *models.StatsModel
+	users          *models.UserModel
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
+	formDecoder    *form.Decoder
 }
 
 func main() {
@@ -51,8 +54,10 @@ func main() {
 		logger:         logger,
 		urls:           &models.URLModel{DB: db},
 		stats:          &models.StatsModel{DB: db},
+		users:          &models.UserModel{DB: db},
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
+		formDecoder:    form.NewDecoder(),
 	}
 
 	srv := &http.Server{
@@ -101,7 +106,7 @@ func openDB() (*sql.DB, error) {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			username TEXT UNIQUE NOT NULL,
 			email TEXT UNIQUE NOT NULL,
-			password TEXT NOT NULL,
+			hashed_password TEXT NOT NULL,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		);`
 

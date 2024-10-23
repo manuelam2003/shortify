@@ -9,17 +9,23 @@ import (
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("POST /shorten", app.shortenLink)
-	mux.HandleFunc("GET /links/{shortCode}", app.shortenView)
-	mux.HandleFunc("GET /links/{shortCode}/stats", app.urlStats)
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	mux.HandleFunc("GET /user/signup", app.userSignup)
-	// mux.Handle("POST /user/signup", app.userSignupPost)
-	// mux.Handle("GET /user/login", app.userLogin)
-	// mux.Handle("POST /user/login", app.userLoginPost)
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
+	mux.Handle("GET /user/signup", dynamic.ThenFunc(app.userSignup))
+	mux.Handle("POST /user/signup", dynamic.ThenFunc(app.userSignupPost))
+	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
+	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
 
-	standard := alice.New(app.recoverPanic, app.logRequest, app.commonHeaders, app.sessionManager.LoadAndSave)
+	protected := dynamic.Append(app.requireAuthentication)
+
+	mux.Handle("POST /shorten", protected.ThenFunc(app.shortenLink))
+	mux.Handle("GET /links/{shortCode}", protected.ThenFunc(app.shortenView))
+	mux.Handle("GET /links/{shortCode}/stats", protected.ThenFunc(app.urlStats))
+
+	mux.Handle("POST /user/logout", protected.ThenFunc(app.userLogoutPost))
+
+	standard := alice.New(app.recoverPanic, app.logRequest, app.commonHeaders)
 
 	return standard.Then(mux)
 }
