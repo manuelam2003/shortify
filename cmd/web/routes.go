@@ -17,7 +17,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
 	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
 
-	protected := dynamic.Append(app.requireAuthentication)
+	protected := dynamic.Append(app.requireAuthentication, app.authenticate)
 
 	mux.Handle("POST /shorten", protected.ThenFunc(app.shortenLink))
 	mux.Handle("GET /links/{shortCode}", protected.ThenFunc(app.shortenView))
